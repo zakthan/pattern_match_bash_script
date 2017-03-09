@@ -1,0 +1,94 @@
+. $HOME_DIR/log_parsing_subfunctions
+
+#----------------------log_parsing_function()-------------------------------------------------------------
+log_parsing_function() {
+
+
+####if user does not provide 4 input parameters echo an instrucion of the usage and exit
+inputs_array=( "$@" )
+##debug##echo ${inputs_array[@]}
+lenght=${#inputs_array[*]}
+##debug##echo $lenght
+if [ $lenght -lt 4 ] ; then echo 'Usage: log_parsing_main.sh LOG (full path) [count|check] PATTERN_MATCH_NAME (has to be one word) PATTERN_MATCH_STRING (inside quotes)';exit 666 ; fi
+
+FILE=$1
+PARSING_TYPE="$2"
+##debug##echo "parsing type  $PARSING_TYPE"
+PATTERN_MATCH_NAME=$3
+PATTERN_MATCH=("${inputs_array[@]:3}")
+PREVIOUS_LINES_COUNT_FILE=$PREVIOUS_LINES_COUNT_FILE_BASE.$PATTERN_MATCH_NAME
+
+##if log file does not exist exit script
+if [ ! -e $FILE ] ; then echo "Log file $FILE does not exist!Exiting..";exit 666;fi
+CURRENT_LINES_COUNT=`$wc -l $FILE|$awk '{print $1}'`
+
+
+##if scripts run for first time $PREVIOUS_LINES_COUNT_FILE does not exist so it needs to be created with value $CURRENT_LINES_COUNT
+if [ ! -e $PREVIOUS_LINES_COUNT_FILE ] ; then echo $CURRENT_LINES_COUNT > $PREVIOUS_LINES_COUNT_FILE;fi
+
+
+PREVIOUS_LINES_COUNT=`cat $PREVIOUS_LINES_COUNT_FILE`
+
+##if CURRENT_LINES_COUNT does not have a valid output exit the script and write to a log  an entry with timestamp
+if [ -z $CURRENT_LINES_COUNT ]
+then
+        echo "$DATE CURRENT_LINES_COUNT var is unset..exit script" >> $LOG_FILE
+        exit 666
+fi
+
+##if PREVIOUS_LINES_COUNT does not have a valid output exit the script and write to a log  an entry with timestamp
+if [ -z $PREVIOUS_LINES_COUNT ]
+then
+        echo "$DATE PREVIOUS_LINES_COUNT var is unset..exit script" >> $LOG_FILE
+        exit 666
+fi
+        
+##$DIFF has the new log lines count between 2 iterations of the script
+DIFF=`expr $CURRENT_LINES_COUNT - $PREVIOUS_LINES_COUNT`
+
+
+##if $CURRENT_LINES_COUNT=0 it means that access log is empty so exit
+if [ $CURRENT_LINES_COUNT -eq 0 ] ; then echo "log file is empty";exit 0 ; fi
+##if $CURRENT_LINES_COUNT > $PREVIOUS_LINES_COUNT  search for the pattern
+##if $CURRENT_LINES_COUNT < $PREVIOUS_LINES_COUNT it means that file is rotated so make CURRENT_LINES_COUNT=wc file and PREVIOUS_LINES_COUNT=0
+##if $CURRENT_LINES_COUNT = $PREVIOUS_LINES_COUNT  means that file is unchanged so exit
+
+if [ $DIFF -gt 0 ] ; then DIFF_RESULT_INTEGER="possitive" ; fi
+if [ $DIFF -lt 0 ];  then DIFF_RESULT_INTEGER="negative" ; fi
+if [ $DIFF -eq 0 ] ;  then DIFF_RESULT_INTEGER="zero"; fi
+
+case $PARSING_TYPE in
+  "count")
+        log_parsing_function_type="log_parsing_function_count $FILE $PATTERN_MATCH_NAME ${PATTERN_MATCH[*]}"
+  ;;
+  "check")
+        log_parsing_function_type="log_parsing_function_check $FILE $PATTERN_MATCH_NAME ${PATTERN_MATCH[*]}"
+  ;;
+  *)
+        echo 'Valid values are log_parsing_function log_file pattern "count|check"'
+        exit 666
+  ;;
+esac
+
+
+case $DIFF_RESULT_INTEGER in
+  possitive)
+        DIFF=`expr $CURRENT_LINES_COUNT - $PREVIOUS_LINES_COUNT`
+	$log_parsing_function_type
+  ;;
+  negative)
+	##make $PREVIOUS_LINES_COUNT=0 because file is rotated
+	PREVIOUS_LINES_COUNT=0
+        DIFF=`expr $CURRENT_LINES_COUNT - $PREVIOUS_LINES_COUNT`
+	$log_parsing_function_type
+  ;;
+  zero)
+	echo "File is unchanged"
+	exit 0
+  ;;
+esac
+
+##next time script runs $CURRENT_LINES_COUNT will become PREVIOUS_LINES_COUNT
+echo $CURRENT_LINES_COUNT > $PREVIOUS_LINES_COUNT_FILE
+}
+#----------------------log_parsing_function()-----------------------------------------------------------------

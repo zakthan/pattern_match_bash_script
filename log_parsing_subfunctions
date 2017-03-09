@@ -1,0 +1,37 @@
+#----------------------log_parsing_function_count()-------------------------------------------------------
+log_parsing_function_count(){
+##collect all the inputs inside function_inputs array using $@
+function_inputs=( "$@" )
+##file name is the 1st input
+FILE=${function_inputs[0]}
+PATTERN_MATCH_NAME=${function_inputs[1]}
+#########lenght=${#function_inputs[*]}
+##collect all the values of the input besides the first 2 ($FILE and $PATTERN_MATCH_NAME). These values are the pattern match
+array=("${function_inputs[@]:2}")
+##count the occurrences of the pattern
+COUNT=`tail -$DIFF $FILE|$grep "${array[*]}"|$wc -l`
+##write a log with the occurences count if count is bigger than 0
+if [ $COUNT -gt 0 ] ; then echo $DATE $COUNT ${array[*]} >> $LOG_DIR/$PATTERN_MATCH_NAME ;echo "Check log $LOG_DIR/$PATTERN_MATCH_NAME" ;else echo "No matching found"; fi
+}
+#----------------------log_parsing_function_count()-------------------------------------------------------
+
+
+
+
+#----------------------log_parsing_function_check()-------------------------------------------------------
+log_parsing_function_check(){
+##collect all the inputs inside function_inputs array
+function_inputs=( "$@" )
+##file name is the 1st input
+FILE=${function_inputs[0]}
+PATTERN_MATCH_NAME=${function_inputs[1]}
+#########lenght=${#function_inputs[*]}
+##collect all the values of the input besides the first 2 ($FILE and $PATTERN_MATCH_NAME). These values are the pattern match
+array=("${function_inputs[@]:2}")
+##count the occurrences of the pattern
+COUNT=`tail -$DIFF $FILE|$grep "${array[*]}"|$wc -l`
+##do an action if count is bigger than 0
+if [ $COUNT -gt 0 ] ; then echo "$DATE $PATTERN_MATCH_NAME Pattern exists $COUNT times!!" ; fi
+}
+#----------------------log_parsing_function_check()-------------------------------------------------------
+

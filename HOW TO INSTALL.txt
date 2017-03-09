@@ -1,0 +1,2 @@
+Installation:
+Just copy files log_parsing_main.sh, log_parsing_functions and log_parsing_subfunctions under a root folder of your choise and under this folder create directories logs and tmp
