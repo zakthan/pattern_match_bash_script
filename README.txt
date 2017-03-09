@@ -2,7 +2,7 @@ Purpose:
 This script  takes as input a file name and a pattern match and either calculates if pattern match exists or the count of the pattern matches. 
 
 Details:
-Uses log_parsing_function that uses 4 arguments:
+The script uses log_parsing_function that takes 4 arguments as input:
 $1=log file (the full path of the log file to search)
 $2=[check (checks if pattern exist)|count (counts the matches)]
 $3=PATTERN_MATCH_NAME
