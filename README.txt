@@ -14,7 +14,7 @@ Usage:
 log_parsing_main.sh $LOG (full path) [count|check] $PATTERN_MATCH_NAME (has to be one word) $PATTERN_MATCH_STRING (inside quotes)
 
 Installation:
-Just copy files log_parsing_main.sh, log_parsing_functions and log_parsing_subfunctions under a root folder of your choise and under this folder create directories logs and tmp
+Just copy files log_parsing_main.sh, log_parsing_functions and log_parsing_subfunctions under a root folder of your choice and under this folder create directories logs and tmp
 
 Limitations:
-Beacuse script is using commad wc to calculate the lines of the file it may become slow when log files are big 
+Because script is using command wc to calculate the lines of the file it may become slow when log files are big 
